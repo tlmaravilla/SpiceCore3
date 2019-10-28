@@ -25,12 +25,10 @@ namespace Spice.Areas.Admin.Controllers
 
         public async Task<IActionResult> Create()
         {
-            var model = new SubCategoryAndCategoryViewModel
-            {
-                CategoryList = await _db.Category.ToListAsync(),
-                SubCategory = new SubCategory(),
-                SubCategoryList = await _db.SubCategory.OrderBy(p => p.Name).Select(s => s.Name).Distinct().ToListAsync()
-            };
+            var model = new SubCategoryAndCategoryViewModel();
+            model.CategoryList = await _db.Category.ToListAsync();
+            model.SubCategory = new SubCategory();
+            model.SubCategoryList = await _db.SubCategory.OrderBy(p => p.Name).Select(s => s.Name).Distinct().ToListAsync();
 
             return View(model);
         }
