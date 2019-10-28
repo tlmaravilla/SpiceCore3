@@ -12,7 +12,7 @@ namespace Spice.Areas.Admin.Controllers
     public class SubCategoryController : Controller
     {
         private readonly ApplicationDbContext _db;
-        
+
         public SubCategoryController(ApplicationDbContext db)
         {
             _db = db;
@@ -25,12 +25,45 @@ namespace Spice.Areas.Admin.Controllers
 
         public async Task<IActionResult> Create()
         {
-            var model = new SubCategoryAndCategoryViewModel();
-            model.CategoryList = await _db.Category.ToListAsync();
-            model.SubCategory = new SubCategory();
-            model.SubCategoryList = await _db.SubCategory.OrderBy(p => p.Name).Select(s => s.Name).Distinct().ToListAsync();
+            var model = new SubCategoryAndCategoryViewModel
+            {
+                CategoryList = await _db.Category.ToListAsync(),
+                SubCategory = new SubCategory(),
+                SubCategoryList = await _db.SubCategory.OrderBy(p => p.Name).Select(s => s.Name).Distinct().ToListAsync()
+            };
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(SubCategoryAndCategoryViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Include is Eager Loading
+                var doesSubCategoryExists = _db.SubCategory.Include(s => s.Category).
+                    Where(s => s.Name == model.SubCategory.Name && s.Category.Id == model.SubCategory.CategoryId);
+
+                if(doesSubCategoryExists.Any())
+                {
+                    // Exists, error - can't add more than 1
+                } else
+                {
+                    _db.SubCategory.Add(model.SubCategory);
+                    await _db.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            var modelVM = new SubCategoryAndCategoryViewModel()
+            {
+                CategoryList = await _db.Category.ToListAsync(),
+                SubCategory = model.SubCategory,
+                SubCategoryList = await _db.SubCategory.OrderBy(p => p.Name).Select(p => p.Name).ToListAsync()
+            };
+
+            return View(modelVM);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -45,17 +78,6 @@ namespace Spice.Areas.Admin.Controllers
             return View(result);
         }
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create()
-        //{
-        //    var model = new SubCategoryAndCategoryViewModel();
-        //    model.CategoryList = await _db.Category.ToListAsync();
-        //    model.SubCategory = new SubCategory();
-        //    model.SubCategoryList = await _db.SubCategory.OrderBy(p => p.Name).Select(s => s.Name).Distinct().ToListAsync();
-
-        //    return View(model);
-        //}
 
         public async Task<IActionResult> Edit(int? id)
         {
