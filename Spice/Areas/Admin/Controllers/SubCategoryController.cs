@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Spice.Data;
 using Spice.Models;
@@ -48,11 +49,12 @@ namespace Spice.Areas.Admin.Controllers
                 var doesSubCategoryExists = _db.SubCategory.Include(s => s.Category).
                     Where(s => s.Name == model.SubCategory.Name && s.Category.Id == model.SubCategory.CategoryId);
 
-                if(doesSubCategoryExists.Any())
+                if (doesSubCategoryExists.Any())
                 {
                     // Exists, error - can't add more than 1
                     StatusMessage = $"Error : Sub Category exists under {doesSubCategoryExists.First().Category.Name} category.  Please use another name.";
-                } else
+                }
+                else
                 {
                     _db.SubCategory.Add(model.SubCategory);
                     await _db.SaveChangesAsync();
@@ -137,6 +139,16 @@ namespace Spice.Areas.Admin.Controllers
             _db.Category.Remove(category);
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        [ActionName("GetSubCategory")]
+        public async Task<IActionResult> GetSubCategory(int id)
+        {
+            var subCats = await (from s in _db.SubCategory
+                           where s.CategoryId == id
+                           select s).ToListAsync();
+
+            return Json(new SelectList(subCats, "Id", "Name"));
         }
     }
 }
