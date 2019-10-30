@@ -91,16 +91,23 @@ namespace Spice.Areas.Admin.Controllers
             if (id == null)
                 return NotFound();
 
-            var subCategory = await _db.SubCategory.FindAsync(id);
+            var subCategory = await _db.SubCategory.SingleOrDefaultAsync(s => s.Id == id);
             if (subCategory == null)
                 return NotFound();
 
-            return View(subCategory);
+            var model = new SubCategoryAndCategoryViewModel
+            {
+                CategoryList = await _db.Category.ToListAsync(),
+                SubCategory = subCategory,
+                SubCategoryList = await _db.SubCategory.OrderBy(p => p.Name).Select(s => s.Name).Distinct().ToListAsync()
+            };
+
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Category category)
+        public async Task<IActionResult> Edit(int id, SubCategoryAndCategoryViewModel model)
         {
             if (ModelState.IsValid)
             {
