@@ -105,19 +105,19 @@ namespace Spice.Areas.Admin.Controllers
             return View(model);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, SubCategoryAndCategoryViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Update(category);
-                await _db.SaveChangesAsync();
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Edit(int id, SubCategoryAndCategoryViewModel model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _db.Update(category);
+        //        await _db.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Index));
-            }
-            return View(category);
-        }
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    return View(category);
+        //}
 
         public async Task<IActionResult> Delete(int? id)
         {
