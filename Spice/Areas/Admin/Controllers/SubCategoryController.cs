@@ -107,12 +107,12 @@ namespace Spice.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, SubCategoryAndCategoryViewModel model)
+        public async Task<IActionResult> Edit(SubCategoryAndCategoryViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var doesSubCategoryExists = _db.SubCategory.Include(s => s.Category).
-                    Where(s => s.Name == model.SubCategory.Name && s.Category.Id == model.SubCategory.CategoryId);  // Must have hidden categoryId in view,  ex:  <input type="hidden" asp-for="SubCategory.CategoryId" />
+                    Where(s => s.Name == model.SubCategory.Name && s.Category.Id == model.SubCategory.CategoryId);  // Must have hidden categoryId in view,  ex:  <input type="hidden" asp-for="SubCategory.CategoryId" />.  did for both subcat id and cat id
 
                 if (doesSubCategoryExists.Any())
                 {
@@ -121,7 +121,7 @@ namespace Spice.Areas.Admin.Controllers
                 }
                 else
                 {
-                    var subCat = await _db.SubCategory.FindAsync(id);
+                    var subCat = await _db.SubCategory.FindAsync(model.SubCategory.Id);
                     subCat.Name = model.SubCategory.Name;
                     await _db.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
