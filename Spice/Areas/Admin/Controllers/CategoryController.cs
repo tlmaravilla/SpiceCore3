@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spice.Data;
@@ -11,7 +10,7 @@ namespace Spice.Areas.Admin.Controllers
     public class CategoryController : Controller
     {
         private readonly ApplicationDbContext _db;
-        
+
         public CategoryController(ApplicationDbContext db)
         {
             _db = db;
@@ -43,18 +42,16 @@ namespace Spice.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
-            if (ModelState.IsValid)
-            {
-                //if valid
-                _db.Category.Add(category);
-                await _db.SaveChangesAsync();
+            if (!ModelState.IsValid)
+                return View(category);
 
-                return RedirectToAction(nameof(Index));
+            _db.Category.Add(category);
+            await _db.SaveChangesAsync();
 
-            }
-            return View(category);
+            return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -71,41 +68,38 @@ namespace Spice.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Category category)
         {
-            if (ModelState.IsValid)
-            {
-                _db.Update(category);
-                await _db.SaveChangesAsync();
+            if (!ModelState.IsValid)
+                return View(category);
 
-                return RedirectToAction(nameof(Index));
-            }
-            return View(category);
+            _db.Update(category);
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
+            if (id == null) 
                 return NotFound();
-            }
+
             var category = await _db.Category.FindAsync(id);
-            if (category == null)
-            {
+            if (category == null) 
                 return NotFound();
-            }
+
             return View(category);
         }
 
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
+        [ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             var category = await _db.Category.FindAsync(id);
 
-            if (category == null)
-            {
+            if (category == null) 
                 return View();
-            }
             _db.Category.Remove(category);
+
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

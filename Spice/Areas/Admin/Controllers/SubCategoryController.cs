@@ -85,7 +85,7 @@ namespace Spice.Areas.Admin.Controllers
             return View(result);
         }
 
-
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -105,19 +105,39 @@ namespace Spice.Areas.Admin.Controllers
             return View(model);
         }
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(int id, SubCategoryAndCategoryViewModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _db.Update(category);
-        //        await _db.SaveChangesAsync();
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, SubCategoryAndCategoryViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var doesSubCategoryExists = _db.SubCategory.Include(s => s.Category).
+                    Where(s => s.Name == model.SubCategory.Name && s.Category.Id == model.SubCategory.CategoryId);  // Must have hidden categoryId in view,  ex:  <input type="hidden" asp-for="SubCategory.CategoryId" />
 
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    return View(category);
-        //}
+                if (doesSubCategoryExists.Any())
+                {
+                    // Exists, error - can't add more than 1
+                    StatusMessage = $"Error : Sub Category exists under {doesSubCategoryExists.First().Category.Name} category.  Please use another name.";
+                }
+                else
+                {
+                    var subCat = await _db.SubCategory.FindAsync(id);
+                    subCat.Name = model.SubCategory.Name;
+                    await _db.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            var modelVM = new SubCategoryAndCategoryViewModel()
+            {
+                CategoryList = await _db.Category.ToListAsync(),
+                SubCategory = model.SubCategory,
+                SubCategoryList = await _db.SubCategory.OrderBy(p => p.Name).Select(p => p.Name).ToListAsync(),
+                StatusMessage = StatusMessage
+            };
+
+            return View(modelVM);
+        }
 
         public async Task<IActionResult> Delete(int? id)
         {
