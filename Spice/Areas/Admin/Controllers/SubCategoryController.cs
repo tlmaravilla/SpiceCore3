@@ -73,16 +73,19 @@ namespace Spice.Areas.Admin.Controllers
             return View(modelVM);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var result = await _db.Category.FindAsync(id);
-            if (result == null)
+            var subCategory = await _db.SubCategory.Include(s => s.Category).SingleOrDefaultAsync(m => m.Id == id);
+            if (subCategory == null)
+            {
                 return NotFound();
+            }
 
-            return View(result);
+            return View(subCategory);
         }
 
         [HttpGet]
@@ -145,25 +148,26 @@ namespace Spice.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            var category = await _db.Category.FindAsync(id);
-            if (category == null)
+            var subCategory = await _db.SubCategory.FindAsync(id);
+            if (subCategory == null)
             {
                 return NotFound();
             }
-            return View(category);
+            return View(subCategory);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
-            var category = await _db.Category.FindAsync(id);
+            var subCategory = await _db.SubCategory.FindAsync(id);
 
-            if (category == null)
+            if (subCategory == null)
             {
                 return View();
             }
-            _db.Category.Remove(category);
+
+            _db.SubCategory.Remove(subCategory);
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
