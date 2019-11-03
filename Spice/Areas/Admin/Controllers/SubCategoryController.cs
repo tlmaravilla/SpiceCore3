@@ -148,7 +148,9 @@ namespace Spice.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            var subCategory = await _db.SubCategory.FindAsync(id);
+
+            var subCategory = await _db.SubCategory.Include(s => s.Category).SingleOrDefaultAsync(s => s.Id == id);
+
             if (subCategory == null)
             {
                 return NotFound();
